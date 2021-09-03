@@ -12,5 +12,8 @@ class Blackjack
   def start
     start_msg
     @deck = Deck.new
+
+    @dealer.reset
+    @player.reset
   end
 end

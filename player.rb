@@ -1,4 +1,6 @@
-class Player
+require_relative "character"
+class Player < Character
+  
   INITIAL_MONEY = 10_000
 
   def initialize
