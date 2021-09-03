@@ -1,4 +1,5 @@
 require_relative "message"
+require_relative "deck"
 
 class Blackjack
   include Message
@@ -10,5 +11,6 @@ class Blackjack
 
   def start
     start_msg
+    @deck = Deck.new
   end
 end
