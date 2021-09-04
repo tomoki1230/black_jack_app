@@ -2,6 +2,8 @@ require_relative "message"
 require_relative "deck"
 
 class Blackjack
+  HIT_NUM = 1
+  STAND_NUM = 2
   include Message
 
   def initialize(dealer, player)
@@ -18,6 +20,7 @@ class Blackjack
 
     @bet = request_bet
     deal_first
+    start_players_turn unless @player.blackjack?
   end
 
   private
@@ -67,5 +70,34 @@ class Blackjack
     else
       point_msg(character)
     end
+  end
+
+  def start_players_turn
+    loop do
+      action_num = request_hit_or_stand
+
+      case action_num
+      when STAND_NUM
+        players_turn_end_msg(@player)
+        break
+      when HIT_NUM
+        deal_card_to(@player)
+        show_hand_msg(@player)
+        info_status_or_points(@player)
+        break if @player.bust?
+      end
+    end
+  end
+
+  def request_hit_or_stand
+    select_action_msg(@player, HIT_NUM, STAND_NUM)
+    action_num = 0
+    loop do
+      action_num = @player.select_action
+      break if action_num.between?(HIT_NUM, STAND_NUM)
+
+      error_msg_about_action(HIT_NUM, STAND_NUM)
+    end
+    action_num
   end
 end

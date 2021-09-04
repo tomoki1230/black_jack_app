@@ -16,4 +16,8 @@ class Player < Character
   def bet_money(bet)
     @money -= bet
   end
+
+  def select_action
+    gets.chomp.to_i
+  end
 end
