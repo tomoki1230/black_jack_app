@@ -5,6 +5,8 @@ require_relative "rule"
 class Blackjack
   HIT_NUM = 1
   STAND_NUM = 2
+  GAME_CONTINUE_NUM = 1
+  GAME_EXIT_NUM = 2
 
   include Message
   include Rule
@@ -16,19 +18,26 @@ class Blackjack
 
   def start
     start_msg
-    @deck = Deck.new
 
-    @dealer.reset
-    @player.reset
+    loop do
+      @deck = Deck.new
 
-    @bet = request_bet
+      @dealer.reset
+      @player.reset
 
-    deal_first
-    start_players_turn unless @player.blackjack?
-    start_players_turn unless @player.bust?
-    judge_winner
-    settle_dividend
-    game_exit if @player.money == 0
+      @bet = request_bet
+
+      deal_first
+
+      start_players_turn unless @player.blackjack?
+      start_dealers_turn unless @player.bust?
+
+      judge_winner
+      settle_dividend
+      game_exit if @player.money.zero?
+
+      continue_or_exit
+    end
   end
 
   private
@@ -49,26 +58,24 @@ class Blackjack
   end
 
   def deal_first
-    first_deal_msg(@dealer) # ① カードを配ることを知らせるメッセージのメソッドの呼び出し
     # 配り方はプレイヤー1枚目→ディーラー1枚目（見せる）→プレイヤー2枚目→ディーラー2枚目（伏せる）
+    first_deal_msg(@dealer)
     2.times do
-      deal_card_to(@player) # ② 1枚カードを配るメソッドの呼び出し
-      deal_card_to(@dealer) # ② 1枚カードを配るメソッドの呼び出し
+      deal_card_to(@player)
+      deal_card_to(@dealer)
     end
-    # ⑤ 手札を表示するメッセージの呼び出し
+
     show_hand_msg(@dealer, first_time: true)
     show_hand_msg(@player)
 
-    info_status_or_points(@player) # ⑥ ③の合計ポイント，④のステータスを表示するメッセージのメソッドの呼び出し
+    info_status_or_points(@player)
   end
 
-  # ② 1枚カードを配る
   def deal_card_to(character)
     drawn_card = @dealer.draw_card(@deck)
     character.receive(drawn_card)
   end
 
-  # ⑥ ③の合計ポイント，④のステータスを表示するメッセージのメソッド
   def info_status_or_points(character)
     if character.blackjack?
       blackjack_msg(character)
@@ -191,5 +198,30 @@ class Blackjack
   def game_exit
     info_gameover_msg
     exit
+  end
+
+  def continue_or_exit
+    action_num = request_continue_or_exit
+
+    case action_num
+    when GAME_EXIT_NUM
+      game_exit_msg
+      exit
+    when GAME_CONTINUE_NUM
+      game_continue_msg
+    end
+  end
+
+  def request_continue_or_exit
+    continue_or_exit_msg(GAME_CONTINUE_NUM, GAME_EXIT_NUM)
+
+    action_num = 0
+    loop do
+      action_num = @player.select_action
+      break if action_num.between?(GAME_CONTINUE_NUM, GAME_EXIT_NUM)
+
+      error_msg_about_continue_or_exit(GAME_CONTINUE_NUM, GAME_EXIT_NUM)
+    end
+    action_num
   end
 end
