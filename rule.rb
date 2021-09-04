@@ -5,6 +5,10 @@ module Rule
   STATUS_BLACKJACK = 0
   STATUS_BUST = 1
   STOP_DRAWING_NUM = 17
+  RATE_BLACKJACK = 2.5
+  RATE_NORMAL_WIN = 2
+  RATE_TIE = 1
+  RATE_LOSE = 0
 
   def adjustable?(point)
     point + ADJUST_NUM <= BLACKJACK_NUM
@@ -20,5 +24,19 @@ module Rule
 
   def continue_drawing_conditions?(dealer)
     dealer.point < STOP_DRAWING_NUM
+  end
+
+  def calculate_dividend(player, bet)
+    rate =
+      if player.win? && player.blackjack?
+        RATE_BLACKJACK
+      elsif player.win? && !player.blackjack?
+        RATE_NORMAL_WIN
+      elsif !player.win? && !player.lose?
+        RATE_TIE
+      elsif player.lose?
+        RATE_LOSE
+      end
+    (bet * rate).floor
   end
 end

@@ -27,6 +27,8 @@ class Blackjack
     start_players_turn unless @player.blackjack?
     start_players_turn unless @player.bust?
     judge_winner
+    settle_dividend
+    game_exit if @player.money == 0
   end
 
   private
@@ -173,5 +175,21 @@ class Blackjack
     else
       end_in_tie_msg
     end
+  end
+
+  def settle_dividend
+    # Enterキーを押してもらう
+    type_enter_msg
+    $stdin.gets.chomp
+
+    dividend = calculate_dividend(@player, @bet)
+    @player.settle(dividend)
+
+    dividend_msg(dividend, @player)
+  end
+
+  def game_exit
+    info_gameover_msg
+    exit
   end
 end
