@@ -129,4 +129,61 @@ module Message
 
     TEXT
   end
+
+  def dealers_hand_msg(dealer)
+    puts <<~TEXT
+
+      #{dealer.class}の手札を確認します。
+
+    TEXT
+  end
+
+  def dealer_draw_msg(dealer, stop_drawing_num)
+    puts <<~TEXT
+
+      #{stop_drawing_num}点未満なので
+      #{dealer.class}はもう1枚カードを引きます。
+
+    TEXT
+  end
+
+  def type_enter_msg
+    puts <<~TEXT
+
+      （ キーボードでEnterキーを押してください。）
+
+    TEXT
+  end
+
+  def compare_point_msg
+    puts <<~TEXT
+
+      勝敗判定に参りましょう。
+
+    TEXT
+  end
+
+  def win_msg(player)
+    puts <<~TEXT
+
+      おめでとうございます。#{player.class}の勝ちです!
+
+    TEXT
+  end
+
+  def lose_msg(player)
+    puts <<~TEXT
+
+      ディーラーの勝利。#{player.class}の負けです。
+
+    TEXT
+  end
+
+  def end_in_tie_msg
+    puts <<~TEXT
+
+      合計ポイントが同点となりました。引き分けです。
+
+    TEXT
+  end
 end

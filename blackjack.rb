@@ -1,10 +1,13 @@
 require_relative "message"
 require_relative "deck"
+require_relative "rule"
 
 class Blackjack
   HIT_NUM = 1
   STAND_NUM = 2
+
   include Message
+  include Rule
 
   def initialize(dealer, player)
     @dealer = dealer
@@ -19,8 +22,11 @@ class Blackjack
     @player.reset
 
     @bet = request_bet
+
     deal_first
     start_players_turn unless @player.blackjack?
+    start_players_turn unless @player.bust?
+    judge_winner
   end
 
   private
@@ -99,5 +105,73 @@ class Blackjack
       error_msg_about_action(HIT_NUM, STAND_NUM)
     end
     action_num
+  end
+
+  def start_dealers_turn
+    # 最初に配ったカード2枚を見せる
+    dealers_hand_msg(@dealer)
+    show_hand_msg(@dealer)
+
+    info_status_or_points(@dealer)
+
+    return if @player.blackjack?
+
+    # Enterキーを押してもらう
+    type_enter_msg
+    $stdin.gets.chomp
+
+    # 17未満の間はカードを引く
+    while continue_drawing_conditions?(@dealer)
+      dealer_draw_msg(@dealer, STOP_DRAWING_NUM)
+      deal_card_to(@dealer)
+      show_hand_msg(@dealer)
+      info_status_or_points(@dealer)
+    end
+  end
+
+  def judge_winner
+    compare_point_msg
+
+    # Enterキーを押してもらう
+    type_enter_msg
+    $stdin.gets.chomp
+
+    show_hand_msg(@player)
+    info_status_or_points(@player)
+
+    show_hand_msg(@dealer)
+    info_status_or_points(@dealer)
+
+    if @dealer.bust?
+      @player.set_win
+    elsif @player.bust?
+      @player.set_lose
+    elsif @dealer.point < @player.point
+      @player.set_win
+    elsif @player.point < @dealer.point
+      @player.set_lose
+    else
+      judge_winner_when_same_point
+    end
+
+    info_judge
+  end
+
+  def judge_winner_when_same_point
+    if @player.blackjack? && !@dealer.blackjack?
+      @player.set_win
+    elsif !@player.blackjack? && @dealer.blackjack?
+      @player.set_lose
+    end
+  end
+
+  def info_judge
+    if @player.win?
+      win_msg(@player)
+    elsif @player.lose?
+      lose_msg(@player)
+    else
+      end_in_tie_msg
+    end
   end
 end
